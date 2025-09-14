@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uang Kas Mingguan XIIMIA-1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-table thead th {
+      position: sticky;
+      top: 0;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    .custom-table tr:hover {
+      background-color: #edf2f7;
+      transition: 0.2s;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 to-purple-200 min-h-screen flex flex-col items-center p-6 backdrop-blur-lg">
+
+  <h1 class="text-4xl font-bold text-blue-900 mb-6">Uang Kas Mingguan XIIMIA-1</h1>
+
+  <!-- Login Section -->
+  <div id="loginSection" class="bg-white/40 backdrop-blur-md p-6 rounded-2xl shadow-xl w-full max-w-sm mb-6">
+    <h2 class="text-2xl font-semibold mb-4 text-center">Login Bendahara</h2>
+    <input id="loginName" type="text" placeholder="Nama" class="w-full p-2 mb-3 border rounded-lg">
+    <input id="loginPassword" type="password" placeholder="Password" class="w-full p-2 mb-3 border rounded-lg">
+    <button onclick="loginBendahara()" class="bg-blue-600 text-white w-full p-2 rounded-xl hover:bg-blue-700 transition">Login</button>
+    <p id="loginError" class="text-red-500 text-sm mt-2 hidden text-center">Nama atau Password salah!</p>
+  </div>
+
+  <!-- Form Section -->
+  <div id="formSection" class="bg-white/40 backdrop-blur-md p-6 rounded-2xl shadow-xl w-full max-w-md mb-6 hidden">
+    <h2 class="text-xl font-semibold mb-4 text-center">Form Uang Kas Mingguan</h2>
+    <input id="namaSiswa" type="text" placeholder="Nama Siswa" class="w-full p-2 mb-3 border rounded-lg">
+    <input id="mingguKe" type="number" placeholder="Minggu Ke-" class="w-full p-2 mb-3 border rounded-lg">
+    <input id="jumlahUang" type="number" placeholder="Jumlah Uang" class="w-full p-2 mb-3 border rounded-lg">
+    <input id="keterangan" type="text" placeholder="Keterangan" class="w-full p-2 mb-3 border rounded-lg">
+    <input id="tanggal" type="date" class="w-full p-2 mb-3 border rounded-lg">
+    <button onclick="tambahData()" class="bg-green-600 text-white w-full p-2 rounded-xl hover:bg-green-700 transition">Tambah</button>
+  </div>
+
+  <!-- Table Section -->
+  <div class="w-full max-w-6xl bg-white/40 backdrop-blur-md p-6 rounded-2xl shadow-xl overflow-x-auto">
+    <h2 class="text-xl font-semibold mb-4 text-center">Tabel Uang Kas Mingguan</h2>
+    <table cellspacing="0" cellpadding="10" width="100%" class="custom-table w-full border-collapse text-center rounded-2xl overflow-hidden shadow-md">
+      <thead>
+        <tr class="bg-gray-300 text-gray-700">
+          <th class="p-3">No</th>
+          <th class="p-3">Nama</th>
+          <th class="p-3">Minggu</th>
+          <th class="p-3">Jumlah</th>
+          <th class="p-3">Keterangan</th>
+          <th class="p-3">Tanggal</th>
+          <th class="p-3">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelKas" class="bg-white/60"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let dataKas = JSON.parse(localStorage.getItem("dataKasMingguan")) || [];
+    let bendaharaLogin = false;
+
+    function loginBendahara() {
+      const nama = document.getElementById("loginName").value;
+      const pass = document.getElementById("loginPassword").value;
+
+      if (nama === "Manda" && pass === "12345") {
+        bendaharaLogin = true;
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("formSection").classList.remove("hidden");
+        renderTabel();
+      } else {
+        document.getElementById("loginError").classList.remove("hidden");
+      }
+    }
+
+    function tambahData() {
+      const nama = document.getElementById("namaSiswa").value;
+      const minggu = document.getElementById("mingguKe").value;
+      const jumlah = document.getElementById("jumlahUang").value;
+      const ket = document.getElementById("keterangan").value;
+      const tanggal = document.getElementById("tanggal").value;
+
+      if (nama && minggu && jumlah && tanggal) {
+        dataKas.push({nama, minggu, jumlah, ket, tanggal});
+        simpanData();
+        renderTabel();
+        document.getElementById("namaSiswa").value = "";
+        document.getElementById("mingguKe").value = "";
+        document.getElementById("jumlahUang").value = "";
+        document.getElementById("keterangan").value = "";
+        document.getElementById("tanggal").value = "";
+      }
+    }
+
+    function renderTabel() {
+      const tabel = document.getElementById("tabelKas");
+      tabel.innerHTML = "";
+
+      dataKas.forEach((data, index) => {
+        const row = document.createElement("tr");
+        row.className = "border-b border-gray-200";
+        row.innerHTML = `
+          <td class="p-3">${index + 1}</td>
+          <td class="p-3">${data.nama}</td>
+          <td class="p-3">Minggu ${data.minggu}</td>
+          <td class="p-3">${data.jumlah}</td>
+          <td class="p-3">${data.ket}</td>
+          <td class="p-3">${data.tanggal}</td>
+          <td class="p-3 space-x-2">
+            ${bendaharaLogin ? `
+            <button onclick="editData(${index})" class="bg-yellow-400 text-white px-3 py-1 rounded-lg hover:bg-yellow-500">Edit</button>
+            <button onclick="hapusData(${index})" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">Hapus</button>` : "—"}
+          </td>
+        `;
+        tabel.appendChild(row);
+      });
+    }
+
+    function hapusData(index) {
+      if (bendaharaLogin) {
+        dataKas.splice(index, 1);
+        simpanData();
+        renderTabel();
+      }
+    }
+
+    function editData(index) {
+      if (bendaharaLogin) {
+        const data = dataKas[index];
+        document.getElementById("namaSiswa").value = data.nama;
+        document.getElementById("mingguKe").value = data.minggu;
+        document.getElementById("jumlahUang").value = data.jumlah;
+        document.getElementById("keterangan").value = data.ket;
+        document.getElementById("tanggal").value = data.tanggal;
+        dataKas.splice(index, 1);
+        simpanData();
+        renderTabel();
+      }
+    }
+
+    function simpanData() {
+      localStorage.setItem("dataKasMingguan", JSON.stringify(dataKas));
+    }
+
+    renderTabel();
+  </script>
+</body>
+</html>
